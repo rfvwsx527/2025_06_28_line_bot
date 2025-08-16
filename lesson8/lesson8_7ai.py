@@ -14,6 +14,7 @@ with gr.Blocks() as demo:
     )
     output_md = gr.Markdown()
 
+    @input_text.submit(inputs=[style_radio, input_text], outputs=[output_md])
     def summarize(style, text):
         if style=="口語化":
             style = "請使用口語化的風格\n"
@@ -26,7 +27,7 @@ with gr.Blocks() as demo:
         elif style == "專業":
             style = "請使用專業的風格\n"
         
-        response = client.models.generate_content(
+        response = client.models.generate_content_stream(
             model="gemini-2.5-flash",
             config= types.GenerateContentConfig(
                 system_instruction=f"""
@@ -39,14 +40,11 @@ with gr.Blocks() as demo:
             ),
             contents = [text]
         )
-                       
-        summary = f"風格: {style}\n\n{response.text}"
-        return summary
-
-    input_text.submit(
-        summarize,
-        inputs=[style_radio, input_text],
-        outputs=output_md
-    )
+        
+        summary = f"風格: {style}\n\n"
+        for chunk in response:
+            if chunk.text:
+                summary += chunk.text
+                yield summary
 
 demo.launch()
