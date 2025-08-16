@@ -1,4 +1,4 @@
 .env
 .gradio
 __pycache__
-/lesson8/*.py
+/lesson8/a.py
